@@ -1,10 +1,11 @@
 CC = gcc
-CFLAGS = -Wall
+CFLAGS = -Wall -I/opt/homebrew/include
+MQTT_LIBS = -L/opt/homebrew/lib -lmosquitto
 
-all: client
+all: main
 
-client: client.c
-	$(CC) $(CFLAGS) -o client client.c
+main: mqtt_client.c
+	$(CC) $(CFLAGS) -o main mqtt_client.c $(MQTT_LIBS)
 
 clean:
-	rm -f client
+	rm -f main
