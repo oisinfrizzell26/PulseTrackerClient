@@ -14,4 +14,6 @@ idf_component_register(
         bt
         driver
         esp_adc
+    PRIV_REQUIRES
+        bt
 )

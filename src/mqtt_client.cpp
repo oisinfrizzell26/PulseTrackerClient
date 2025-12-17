@@ -24,7 +24,7 @@
 static const char *TAG = "MQTT_CLIENT";
 
 // MQTT config
-#define MQTT_BROKER    "mqtt://172.20.10.3:1883"
+#define MQTT_BROKER    "mqtt://200.69.13.70:1883"
 #define TOPIC_MODE     "pulsetracker/mode"
 #define TOPIC_HEART    "pulsetracker/heartRate"
 #define TOPIC_WORKOUT  "pulsetracker/workout"
@@ -47,6 +47,7 @@ static void wifi_event_handler(void* arg, esp_event_base_t event_base,
                                int32_t event_id, void* event_data)
 {
     if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START) {
+        ESP_LOGI(TAG, "WiFi STA started, attempting connection...");
         esp_wifi_connect();
     } else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_DISCONNECTED) {
         if (s_retry_num < MAX_RETRY) {
@@ -55,11 +56,14 @@ static void wifi_event_handler(void* arg, esp_event_base_t event_base,
             ESP_LOGI(TAG, "Retrying WiFi connection (%d/%d)", s_retry_num, MAX_RETRY);
         } else {
             xEventGroupSetBits(s_wifi_event_group, WIFI_FAIL_BIT);
+            ESP_LOGE(TAG, "WiFi connection failed after %d retries", MAX_RETRY);
         }
-        ESP_LOGI(TAG, "WiFi disconnected");
+        ESP_LOGW(TAG, "WiFi disconnected");
     } else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) {
         ip_event_got_ip_t* event = (ip_event_got_ip_t*) event_data;
-        ESP_LOGI(TAG, "Got IP: " IPSTR, IP2STR(&event->ip_info.ip));
+        ESP_LOGI(TAG, "★★★ Got IP: " IPSTR " ★★★", IP2STR(&event->ip_info.ip));
+        ESP_LOGI(TAG, "Gateway: " IPSTR, IP2STR(&event->ip_info.gw));
+        ESP_LOGI(TAG, "Netmask: " IPSTR, IP2STR(&event->ip_info.netmask));
         s_retry_num = 0;
         xEventGroupSetBits(s_wifi_event_group, WIFI_CONNECTED_BIT);
     }
