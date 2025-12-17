@@ -1,24 +1,26 @@
-/*******************************************************************************
- * Heart Rate Sensor Header - ESP-IDF Implementation
- ******************************************************************************/
-
 #ifndef HEART_RATE_H
 #define HEART_RATE_H
 
-#include <stdbool.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-// Initialize ADC for heart rate sensor
+// Initialize heart rate sensor on GPIO36
 void heart_rate_init(void);
 
-// Update heart rate reading - returns true if new beat detected
-bool heart_rate_update(float *out_bpm);
+// Get current heart rate (BPM)
+int heart_rate_get_bpm(void);
+
+// Check if heart rate is valid
+bool heart_rate_is_valid(void);
+
+// Debug function to read raw voltage
+uint32_t heart_rate_read_voltage_debug(void);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // HEART_RATE_H
+#endif 
