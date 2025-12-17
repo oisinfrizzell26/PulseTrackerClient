@@ -19,19 +19,18 @@
 #include "lwip/sys.h"
 
 #include "app_mqtt.h"  // Our app header
+#include "config.h"    // Configuration definitions
 
 static const char *TAG = "MQTT_CLIENT";
-
-// WiFi credentials
-#define WIFI_SSID      "Tolafon"
-#define WIFI_PASS      "Tola2005"
-#define MAX_RETRY      10
 
 // MQTT config
 #define MQTT_BROKER    "mqtt://172.20.10.3:1883"
 #define TOPIC_MODE     "pulsetracker/mode"
 #define TOPIC_HEART    "pulsetracker/heartRate"
 #define TOPIC_WORKOUT  "pulsetracker/workout"
+
+// Connection Settings
+#define MAX_RETRY      10
 
 // Event group for WiFi
 static EventGroupHandle_t s_wifi_event_group;
