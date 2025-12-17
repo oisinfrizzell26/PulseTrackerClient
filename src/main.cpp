@@ -1,55 +1,110 @@
-#include <Arduino.h>
+/*******************************************************************************
+ * ESP32 PulseTracker - Main Application
+ * ESP-IDF Framework with FreeRTOS Tasks
+ *
+ * Features:
+ * - WiFi + MQTT for cloud connectivity
+ * - BLE client to receive workout data from MAX32655
+ * - Heart rate sensor via ADC
+ * - Buzzer feedback
+ ******************************************************************************/
 
-// from mqtt_client.cpp
-extern void mqtt_init();
-extern void mqtt_loop();
-extern bool mqtt_publish_heart_rate(int bpm);
-extern const char* mqtt_get_mode();
+#include <stdio.h>
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "esp_log.h"
 
-// from heart_rate.cpp
-extern void heart_rate_init();
-extern bool heart_rate_update(float &outBpm);
+#include "app_mqtt.h"
+#include "ble_client.h"
+#include "heart_rate.h"
+#include "buzzer.h"
 
-// from buzzer.cpp
-extern void init_buzzer();
-extern void buzzer_update();
+static const char *TAG = "MAIN";
 
-static unsigned long lastPublish = 0;
-static const unsigned long publishInterval = 1000; // max 1/sec
+// Heart rate publish rate limiting
+static const uint32_t PUBLISH_INTERVAL_MS = 1000;  // max 1/sec
 
-void setup() {
-  Serial.begin(115200);
-  delay(300);
+/*******************************************************************************
+ * Heart Rate Task
+ * Samples ADC and publishes BPM over MQTT
+ ******************************************************************************/
+static void heart_rate_task(void *pvParameters)
+{
+    ESP_LOGI(TAG, "Heart rate task started");
 
-  Serial.println("ESP32 PulseTracker starting...");
+    TickType_t last_publish = 0;
 
-  init_buzzer();
-  heart_rate_init();
-  mqtt_init();
+    while (1) {
+        float bpm;
+        bool new_beat = heart_rate_update(&bpm);
+
+        TickType_t now = xTaskGetTickCount();
+        uint32_t elapsed = (now - last_publish) * portTICK_PERIOD_MS;
+
+        if (new_beat && elapsed >= PUBLISH_INTERVAL_MS) {
+            last_publish = now;
+
+            int bpm_int = (int)(bpm + 0.5f);
+
+            ESP_LOGI(TAG, "Mode=%s | BPM=%d | BLE=%s",
+                     mqtt_get_mode(),
+                     bpm_int,
+                     ble_client_is_connected() ? "connected" : "scanning");
+
+            mqtt_publish_heart_rate(bpm_int);
+        }
+
+        // Small delay to prevent task starvation
+        vTaskDelay(pdMS_TO_TICKS(5));
+    }
 }
 
-void loop() {
-  // keep MQTT/WiFi alive
-  mqtt_loop();
+/*******************************************************************************
+ * Buzzer Task
+ * Periodic beep feedback
+ ******************************************************************************/
+static void buzzer_task(void *pvParameters)
+{
+    ESP_LOGI(TAG, "Buzzer task started");
 
-  // beep every 5 seconds (non-blocking)
-  buzzer_update();
+    while (1) {
+        buzzer_update();
+        vTaskDelay(pdMS_TO_TICKS(10));
+    }
+}
 
-  // heart rate sampling
-  float bpm;
-  bool newBeat = heart_rate_update(bpm);
+/*******************************************************************************
+ * App Main Entry Point
+ ******************************************************************************/
+extern "C" void app_main(void)
+{
+    printf("\n");
+    printf("========================================\n");
+    printf("   ESP32 PulseTracker v2.0 (ESP-IDF)\n");
+    printf("   WiFi + MQTT + BLE + Heart Rate\n");
+    printf("========================================\n\n");
 
-  // publish on new beat, rate-limited
-  if (newBeat && millis() - lastPublish >= publishInterval) {
-    lastPublish = millis();
+    // Initialize peripherals
+    ESP_LOGI(TAG, "Initializing buzzer...");
+    buzzer_init();
 
-    int bpmInt = (int)(bpm + 0.5f);
+    ESP_LOGI(TAG, "Initializing heart rate sensor...");
+    heart_rate_init();
 
-    Serial.print("Mode=");
-    Serial.print(mqtt_get_mode());
-    Serial.print(" | Publishing BPM: ");
-    Serial.println(bpmInt);
+    // Initialize WiFi and MQTT (blocks until WiFi connected)
+    ESP_LOGI(TAG, "Initializing WiFi and MQTT...");
+    mqtt_init();
 
-    mqtt_publish_heart_rate(bpmInt);
-  }
+    // Initialize BLE client (starts scanning for MAX32655)
+    ESP_LOGI(TAG, "Initializing BLE client...");
+    ble_client_init();
+
+    // Create FreeRTOS tasks
+    xTaskCreate(heart_rate_task, "heart_rate", 4096, NULL, 5, NULL);
+    xTaskCreate(buzzer_task, "buzzer", 2048, NULL, 3, NULL);
+
+    ESP_LOGI(TAG, "All systems initialized!");
+    printf("\n========================================\n");
+    printf("   Ready! Scanning for MAX32655...\n");
+    printf("========================================\n\n");
 }
