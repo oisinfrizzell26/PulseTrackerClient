@@ -38,3 +38,6 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Configuration files with credentials
+src/config.h
