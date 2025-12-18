@@ -99,3 +99,11 @@ void buzzer_beep(uint32_t duration_ms)
     vTaskDelay(pdMS_TO_TICKS(duration_ms));
     buzzer_off();
 }
+
+void buzzer_trigger_remote(void)
+{
+    ESP_LOGI(TAG, "Remote buzzer triggered via MQTT");
+    buzzer_on();
+    vTaskDelay(pdMS_TO_TICKS(500));  // buzz for 500ms
+    buzzer_off();
+}

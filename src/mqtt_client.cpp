@@ -20,6 +20,7 @@
 
 #include "app_mqtt.h"  // Our app header
 #include "config.h"    // Configuration definitions
+#include "buzzer.h"    // Buzzer control
 
 static const char *TAG = "MQTT_CLIENT";
 
@@ -28,6 +29,7 @@ static const char *TAG = "MQTT_CLIENT";
 #define TOPIC_MODE     "pulsetracker/mode"
 #define TOPIC_HEART    "pulsetracker/heartRate"
 #define TOPIC_WORKOUT  "pulsetracker/workout"
+#define TOPIC_BUZZER   "pulsetracker/buzzer"
 
 // Connection Settings
 #define MAX_RETRY      10
@@ -82,6 +84,9 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base,
             // Subscribe to mode topic
             esp_mqtt_client_subscribe(mqtt_client, TOPIC_MODE, 0);
             ESP_LOGI(TAG, "Subscribed to: %s", TOPIC_MODE);
+            // Subscribe to buzzer topic
+            esp_mqtt_client_subscribe(mqtt_client, TOPIC_BUZZER, 0);
+            ESP_LOGI(TAG, "Subscribed to: %s", TOPIC_BUZZER);
             break;
 
         case MQTT_EVENT_DISCONNECTED:
@@ -101,6 +106,12 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base,
                 strncpy(current_mode, event->data, len);
                 current_mode[len] = '\0';
                 ESP_LOGI(TAG, "Mode updated to: %s", current_mode);
+            }
+            // Check if it's the buzzer topic
+            else if (event->topic_len == strlen(TOPIC_BUZZER) &&
+                     strncmp(event->topic, TOPIC_BUZZER, event->topic_len) == 0) {
+                ESP_LOGI(TAG, "Buzzer command received");
+                buzzer_trigger_remote();
             }
             break;
 

@@ -105,7 +105,8 @@ extern "C" void app_main(void)
 
     // Create FreeRTOS tasks
     xTaskCreate(heart_rate_task, "heart_rate", 4096, NULL, 5, NULL);
-    xTaskCreate(buzzer_task, "buzzer", 2048, NULL, 3, NULL);
+    // Buzzer task disabled - using MQTT-triggered buzzer only
+    // xTaskCreate(buzzer_task, "buzzer", 2048, NULL, 3, NULL);
 
     ESP_LOGI(TAG, "All systems initialized!");
     printf("\n========================================\n");
