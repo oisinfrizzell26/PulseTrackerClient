@@ -217,12 +217,17 @@ bool mqtt_publish_workout_data(const char* json_data)
 {
     if (mqtt_client == NULL) return false;
 
-    // QoS1 + enqueue ensures broker acknowledges or the message is queued if briefly disconnected
-    int msg_id = esp_mqtt_client_enqueue(mqtt_client, TOPIC_WORKOUT, json_data, 0, 1, 0, true);
+    // QoS2 + enqueue to get exactly-once delivery and queue if connection blips
+    size_t len = strlen(json_data);
+    int msg_id = esp_mqtt_client_enqueue(mqtt_client, TOPIC_WORKOUT,
+                                         json_data, len,
+                                         2 /* qos */, 0 /* retain */,
+                                         true /* store offline */);
     if (msg_id < 0) {
-        ESP_LOGW(TAG, "Failed to publish workout data (len=%d)", (int)strlen(json_data));
+        ESP_LOGW(TAG, "Failed to publish workout data (len=%d)", (int)len);
         return false;
     }
+    ESP_LOGI(TAG, "Workout publish queued (msg_id=%d, len=%d, qos=2)", msg_id, (int)len);
     return true;
 }
 
