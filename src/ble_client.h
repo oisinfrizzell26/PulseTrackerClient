@@ -24,6 +24,9 @@ bool ble_client_is_connected(void);
 // Set callback for workout data (optional, MQTT publish is automatic)
 void ble_client_set_workout_callback(ble_workout_callback_t callback);
 
+// Send JSON message to MAX (writes RX characteristic), returns true on success
+bool ble_client_send_message(const char *msg);
+
 #ifdef __cplusplus
 }
 #endif

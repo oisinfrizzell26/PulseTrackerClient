@@ -24,6 +24,7 @@
 
 #include "ble_client.h"
 #include "app_mqtt.h"
+#include "hr_session.h"
 
 static const char *TAG = "BLE_CLIENT";
 
@@ -130,6 +131,12 @@ static bool json_get_ulong(const char *json, const char *key, unsigned long *out
 
 static void process_workout_event(const char *json_data, uint16_t len)
 {
+    if (strstr(json_data, "\"cmd\":\"hr_req\"")) {
+        ESP_LOGI(TAG, "HR request received from MAX - starting 5s capture");
+        hr_session_start(0);
+        return;
+    }
+
     char event_type[16] = {0};
     char mode[16] = {0};
     char time_str[16] = {0};
@@ -497,6 +504,7 @@ static int ble_gap_event(struct ble_gap_event *event, void *arg)
         printf("\n!!! BLE DISCONNECTED (reason: %d) - Reconnecting...\n\n",
                event->disconnect.reason);
 
+        hr_session_cancel();
         connected = false;
         service_discovered = false;
         mtu_exchanged = false;
@@ -623,4 +631,23 @@ bool ble_client_is_connected(void)
 void ble_client_set_workout_callback(ble_workout_callback_t callback)
 {
     workout_callback = callback;
+}
+
+bool ble_client_send_message(const char *msg)
+{
+    if (!connected || rx_char_handle == 0 || msg == NULL) {
+        ESP_LOGW(TAG, "BLE TX not ready");
+        return false;
+    }
+
+    int rc = ble_gattc_write_flat(conn_handle, rx_char_handle,
+                                  msg, strlen(msg),
+                                  NULL, NULL);
+    if (rc != 0) {
+        ESP_LOGE(TAG, "Write failed: %d", rc);
+        return false;
+    }
+
+    ESP_LOGI(TAG, "TX → MAX: %s", msg);
+    return true;
 }

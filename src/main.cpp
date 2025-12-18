@@ -17,6 +17,7 @@
 #include "app_mqtt.h"
 #include "ble_client.h"
 #include "heart_rate.h"
+#include "hr_session.h"
 #include "buzzer.h"
 
 static const char *TAG = "MAIN";
@@ -90,6 +91,9 @@ extern "C" void app_main(void)
 
     ESP_LOGI(TAG, "Initializing heart rate sensor...");
     heart_rate_init();
+
+    ESP_LOGI(TAG, "Initializing HR session manager...");
+    hr_session_init();
 
     // Initialize WiFi and MQTT (blocks until WiFi connected)
     ESP_LOGI(TAG, "Initializing WiFi and MQTT...");

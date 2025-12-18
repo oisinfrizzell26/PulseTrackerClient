@@ -22,6 +22,7 @@ static bool sensor_valid = false;
 static uint32_t last_beat_time = 0;
 static bool last_state = false;
 static TaskHandle_t heart_rate_task_handle = NULL;
+static volatile bool beat_detected = false;
 
 // Beat detection variables
 static uint32_t beat_times[10] = {0};
@@ -81,6 +82,7 @@ static void heart_rate_task(void *pvParameters) {
                     }
                     avg_interval /= beat_count;
                     current_bpm = 60000 / avg_interval;
+                    beat_detected = true;
                 }
             }
             
@@ -121,6 +123,16 @@ int heart_rate_get_bpm(void) {
 
 bool heart_rate_is_valid(void) {
     return sensor_valid && (current_bpm > 0);
+}
+
+bool heart_rate_update(float *bpm_out) {
+    if (bpm_out) {
+        *bpm_out = (float)current_bpm;
+    }
+
+    bool event = beat_detected;
+    beat_detected = false;
+    return event;
 }
 
 uint32_t heart_rate_read_voltage_debug(void) {
