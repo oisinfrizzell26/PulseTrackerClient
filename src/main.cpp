@@ -19,6 +19,7 @@
 #include "heart_rate.h"
 #include "hr_session.h"
 #include "buzzer.h"
+#include "led.h"
 
 static const char *TAG = "MAIN";
 
@@ -86,6 +87,11 @@ extern "C" void app_main(void)
     printf("========================================\n\n");
 
     // Initialize peripherals
+    ESP_LOGI(TAG, "Initializing LEDs...");
+    led_init();
+    red_led_on();   // Start with red LED (idle state)
+    green_led_off();
+
     ESP_LOGI(TAG, "Initializing buzzer...");
     buzzer_init();
 

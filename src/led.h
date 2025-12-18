@@ -1,6 +1,10 @@
 #ifndef LED_H
 #define LED_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * Initialize LED GPIOs
  */
@@ -17,5 +21,9 @@ void red_led_off(void);
  */
 void green_led_on(void);
 void green_led_off(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // LED_H

@@ -25,6 +25,7 @@
 #include "ble_client.h"
 #include "app_mqtt.h"
 #include "hr_session.h"
+#include "led.h"
 
 static const char *TAG = "BLE_CLIENT";
 
@@ -169,6 +170,10 @@ static void process_workout_event(const char *json_data, uint16_t len)
 
         printf(">>> WORKOUT STARTED!\n");
         printf("    Mode: %s (%d laps)\n", mode, total_laps);
+        
+        // Turn on green LED for active workout
+        green_led_on();
+        red_led_off();
     }
     else if (strcmp(event_type, "lap") == 0) {
         json_get_int(json_data, "lap", &lap_num);
@@ -190,6 +195,10 @@ static void process_workout_event(const char *json_data, uint16_t len)
         printf(">>> WORKOUT COMPLETE!\n");
         printf("    Total Laps: %d\n", total_laps);
         printf("    Total Time: %s\n", time_str);
+        
+        // Turn on red LED when workout completes (idle)
+        red_led_on();
+        green_led_off();
     }
     else if (strcmp(event_type, "stop") == 0) {
         json_get_int(json_data, "laps", &lap_num);
@@ -199,6 +208,10 @@ static void process_workout_event(const char *json_data, uint16_t len)
         printf(">>> WORKOUT STOPPED\n");
         printf("    Laps Completed: %d\n", lap_num);
         printf("    Time: %s\n", time_str);
+        
+        // Turn on red LED when workout stops (idle)
+        red_led_on();
+        green_led_off();
     }
     else if (strcmp(event_type, "status") == 0) {
         char state[16] = {0};
