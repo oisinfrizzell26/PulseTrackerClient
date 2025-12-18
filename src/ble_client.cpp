@@ -1,11 +1,3 @@
-/*******************************************************************************
- * ESP32 BLE Client - Workout Data Receiver
- *
- * Connects to MAX32655 BLE peripheral and receives workout data.
- * Uses ESP-IDF native NimBLE BLE APIs.
- * Integrated with MQTT to forward workout data to broker.
- ******************************************************************************/
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -66,9 +58,6 @@ static int ble_gap_event(struct ble_gap_event *event, void *arg);
 static void exchange_mtu(void);
 static void request_conn_params_update(void);
 
-/*******************************************************************************
- * Workout Data Processing
- ******************************************************************************/
 
 static void format_time(uint32_t ms, char *buf, size_t buf_len)
 {
@@ -232,9 +221,6 @@ static void process_workout_event(const char *json_data, uint16_t len)
     printf("========================================\n\n");
 }
 
-/*******************************************************************************
- * BLE Functions
- ******************************************************************************/
 
 static const ble_uuid16_t cccd_uuid = BLE_UUID16_INIT(0x2902);
 
@@ -609,10 +595,6 @@ static void ble_on_reset(int reason)
 {
     ESP_LOGE(TAG, "BLE reset: %d", reason);
 }
-
-/*******************************************************************************
- * Public API
- ******************************************************************************/
 
 void ble_client_init(void)
 {

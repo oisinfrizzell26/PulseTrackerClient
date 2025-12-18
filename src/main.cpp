@@ -1,14 +1,3 @@
-/*******************************************************************************
- * ESP32 PulseTracker - Main Application
- * ESP-IDF Framework with FreeRTOS Tasks
- *
- * Features:
- * - WiFi + MQTT for cloud connectivity
- * - BLE client to receive workout data from MAX32655
- * - Heart rate sensor via ADC
- * - Buzzer feedback
- ******************************************************************************/
-
 #include <stdio.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -26,10 +15,7 @@ static const char *TAG = "MAIN";
 // Heart rate publish rate limiting
 static const uint32_t PUBLISH_INTERVAL_MS = 1000;  // max 1/sec
 
-/*******************************************************************************
- * Heart Rate Task
- * Samples ADC and publishes BPM over MQTT
- ******************************************************************************/
+
 static void heart_rate_task(void *pvParameters)
 {
     ESP_LOGI(TAG, "Heart rate task started");
@@ -61,10 +47,7 @@ static void heart_rate_task(void *pvParameters)
     }
 }
 
-/*******************************************************************************
- * Buzzer Task
- * Periodic beep feedback
- ******************************************************************************/
+
 static void buzzer_task(void *pvParameters)
 {
     ESP_LOGI(TAG, "Buzzer task started");
@@ -75,9 +58,7 @@ static void buzzer_task(void *pvParameters)
     }
 }
 
-/*******************************************************************************
- * App Main Entry Point
- ******************************************************************************/
+
 extern "C" void app_main(void)
 {
     printf("\n");

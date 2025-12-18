@@ -20,7 +20,7 @@ static const char *TAG = "HR_SESSION";
 #define HR_QUEUE_LENGTH         4
 #define HR_TASK_STACK_WORDS  2048
 
-/* ---------- Command queue ---------- */
+//Command queue 
 
 typedef enum {
     HR_CMD_START,
@@ -39,7 +39,7 @@ static uint8_t hr_queue_storage[HR_QUEUE_LENGTH * sizeof(hr_cmd_t)];
 static StaticTask_t hr_task_tcb;
 static StackType_t hr_task_stack[HR_TASK_STACK_WORDS];
 
-/* ---------- Internal helpers ---------- */
+// Internal helpers 
 
 static void hr_task(void *param)
 {
@@ -105,7 +105,7 @@ static void hr_task(void *param)
     }
 }
 
-/* ---------- Public API ---------- */
+// Public API 
 
 void hr_session_init(void)
 {

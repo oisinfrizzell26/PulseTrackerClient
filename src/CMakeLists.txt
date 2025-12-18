@@ -1,4 +1,3 @@
-# ESP-IDF Component CMakeLists.txt for PulseTracker
 
 FILE(GLOB_RECURSE app_sources_cpp ${CMAKE_SOURCE_DIR}/src/*.cpp)
 FILE(GLOB_RECURSE app_sources_c ${CMAKE_SOURCE_DIR}/src/*.c)

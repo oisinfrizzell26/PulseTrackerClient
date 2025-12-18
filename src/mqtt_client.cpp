@@ -1,8 +1,3 @@
-/*******************************************************************************
- * MQTT Client - ESP-IDF Implementation
- * Handles WiFi connection and MQTT pub/sub for PulseTracker
- ******************************************************************************/
-
 #include <stdio.h>
 #include <string.h>
 #include "freertos/FreeRTOS.h"
@@ -184,9 +179,6 @@ static void mqtt_app_start(void)
     esp_mqtt_client_start(mqtt_client);
 }
 
-/*******************************************************************************
- * Public API
- ******************************************************************************/
 
 void mqtt_init(void)
 {
