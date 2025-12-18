@@ -215,10 +215,15 @@ bool mqtt_publish_heart_rate(int bpm)
 
 bool mqtt_publish_workout_data(const char* json_data)
 {
-    if (!mqtt_connected || mqtt_client == NULL) return false;
+    if (mqtt_client == NULL) return false;
 
-    int msg_id = esp_mqtt_client_publish(mqtt_client, TOPIC_WORKOUT, json_data, 0, 0, 0);
-    return msg_id >= 0;
+    // QoS1 + enqueue ensures broker acknowledges or the message is queued if briefly disconnected
+    int msg_id = esp_mqtt_client_enqueue(mqtt_client, TOPIC_WORKOUT, json_data, 0, 1, 0, true);
+    if (msg_id < 0) {
+        ESP_LOGW(TAG, "Failed to publish workout data (len=%d)", (int)strlen(json_data));
+        return false;
+    }
+    return true;
 }
 
 const char* mqtt_get_mode(void)
